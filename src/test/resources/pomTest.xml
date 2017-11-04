@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.remy</groupId>
+    <artifactId>remyApp</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Application remyApp</name>
+
+    <parent>
+        <groupId>com.probtp.maven</groupId>
+        <artifactId>jee-model-parent-pom</artifactId>
+        <version>1.0.12</version>
+    </parent>
+
+    <profiles>
+        <profile>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <id>default</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- n?cessaire avec Java 8 -->
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Configuration du nom final de l'ear. Ex : CtiSicapVal-1-1-2 ear.name
+            => Cti ear.org => Sicap ear.env => Val La version est donnee par la version
+            du pom. -->
+        <ear.name>remyApp</ear.name>
+        <ear.org>Probtp</ear.org>
+        <!-- ear.env : deja defini dans les profils dev, val et prod (dev active
+            par defaut) si la variable est renseigne ici, cela va surcharger les profils
+            du pom parent si besoin d'un autre environnement, ex val4, definir un profil
+            val4 comme dans jee-model-parent-pom -->
+        <!-- ear.env>Dev</ear.env -->
+        <!-- context root du war contenu dans l'ear -->
+        <war.context.root>remyContextRoot</war.context.root>
+        <!-- l'artifactId du pom root. Ceci sert pour la generation du manifest -->
+        <root.artifactId>remyApp</root.artifactId>
+        <!-- version du socle web base pour les applications STRUTS -->
+        <socle.web.base.version>4.6.10</socle.web.base.version>
+        <!-- version du socle services -->
+        <socle.service.version>4.6.1</socle.service.version>
+        <!-- version du socle utils -->
+        <socle.utils.version>4.2.0</socle.utils.version>
+        <!-- la version de Spring -->
+        <spring.version>4.3.10.RELEASE</spring.version>
+        <!-- la version du socle appli gen -->
+        <socle.appli-gen.version>1.1.2</socle.appli-gen.version>
+        <!-- la version du socle api rest -->
+        <socle.service.rest.version>1.1.0-SNAPSHOT</socle.service.rest.version>
+
+        <esb-shared.version>1.0.9</esb-shared.version>
+        <socle.tom.version>0.9.5</socle.tom.version>
+        <socle.management.version>0.0.6</socle.management.version>
+        <socle.donnees.version>1.0.3</socle.donnees.version>
+        <spring-data.version>Ingalls-SR6</spring-data.version>
+        <hibernate.version>5.0.9.Final</hibernate.version>
+        <querydsl.version>4.1.4</querydsl.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- JavaEE -->
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>2.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>4.0.0</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    
+  <modules>
+    <module>remyApp-service-interface</module>
+    <module>remyApp-service-restendpoint</module>
+    <module>remyApp-service</module>
+    <module>remyApp-ear</module>
+    <module>remyApp-war</module>
+    <module>remyApp-documentation</module>
+  </modules>
+</project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+    <context-root>remyContextRoot</context-root>
+
+    <resource-ref>
+        <res-ref-name>jdbc/maDataSourceAlias</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <jndi-name>jdbc/maDataSourceServeur</jndi-name>
+    </resource-ref>
+</jboss-web>
