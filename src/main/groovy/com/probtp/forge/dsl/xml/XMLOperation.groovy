@@ -1,11 +1,11 @@
 package com.probtp.forge.dsl.xml
 
-import groovy.xml.QName
+import com.probtp.forge.dsl.FileOperation
 
 import static com.probtp.forge.dsl.xml.XMLUtils.hasSameName
 import groovy.xml.StreamingMarkupBuilder
 
-class XMLOperation {
+class XMLOperation implements FileOperation {
 
     private NodeList nodes
     private StreamingMarkupBuilder streamingMarkupBuilder = new StreamingMarkupBuilder()
@@ -23,7 +23,7 @@ class XMLOperation {
         return xmlParser.parseText(streamingMarkupBuilder.bind(closure).toString())
     }
 
-    XMLOperation append(Closure closure) {
+    FileOperation append(Closure closure) {
         Node nodeToAppend = buildNodeFrom(closure)
         /*if(nodeToAppend.name() instanceof QName) {
             QName qName = (QName) nodeToAppend.name()
@@ -42,7 +42,7 @@ class XMLOperation {
         return this
     }
 
-    XMLOperation removeAll() {
+    FileOperation removeAll() {
         if(nodes.isEmpty()) {
             return this
         }
@@ -54,7 +54,7 @@ class XMLOperation {
         return this
     }
 
-    XMLOperation grep(Closure closure) {
+    FileOperation grep(Closure closure) {
         if(nodes.isEmpty()) {
             return this
         }
@@ -85,7 +85,7 @@ class XMLOperation {
     }
 
 
-    XMLOperation transform(Closure closure) {
+    FileOperation transform(Closure closure) {
         if(nodes.isEmpty()) {
             return this
         }

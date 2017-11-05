@@ -12,17 +12,6 @@ class XMLOperationSpec extends Specification {
         return new XmlParser().parseText(xml)
     }
 
-    void show(Node node) {
-        XmlNodePrinter nodePrinter = new XmlNodePrinter()
-        nodePrinter.with {
-            preserveWhitespace = true
-            expandEmptyElements = true
-            namespaceAware = true
-            quote = "'" // Use single quote for attributes
-        }
-        nodePrinter.print(node)
-    }
-
     def "Append simple node"() {
         setup :
         Node node = buildNode({

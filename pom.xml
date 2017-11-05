@@ -40,6 +40,14 @@
             <version>2.4.12</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <!-- any version of Groovy \>= 1.5.0 should work here -->
+            <version>1.9.4</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
