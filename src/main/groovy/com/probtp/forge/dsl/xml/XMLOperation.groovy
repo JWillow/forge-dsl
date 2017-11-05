@@ -1,6 +1,7 @@
 package com.probtp.forge.dsl.xml
 
 import com.probtp.forge.dsl.FileOperation
+import groovy.text.SimpleTemplateEngine
 
 import static com.probtp.forge.dsl.xml.XMLUtils.hasSameName
 import groovy.xml.StreamingMarkupBuilder
@@ -23,22 +24,29 @@ class XMLOperation implements FileOperation {
         return xmlParser.parseText(streamingMarkupBuilder.bind(closure).toString())
     }
 
-    FileOperation append(Closure closure) {
-        Node nodeToAppend = buildNodeFrom(closure)
-        /*if(nodeToAppend.name() instanceof QName) {
-            QName qName = (QName) nodeToAppend.name()
-            println qName.getPrefix()
-            Node nNode = new Node(null, qName.getPrefix() + ":" + qName.getLocalPart(), nodeToAppend.attributes())
-            nodeToAppend.children().each {
-                nNode.append(it)
-            }
-            nodeToAppend = nNode
-        }*/
-
+    FileOperation append(File fileName, Map<String,Object> parameters) {
+        SimpleTemplateEngine templateEngine = new SimpleTemplateEngine()
+        String result = templateEngine.createTemplate(fileName).make(parameters)
+        Node nodeToAppend = xmlParser.parseText(result)
         nodes.each { Node node ->
             node.append(nodeToAppend)
         }
+        return this
+    }
 
+    FileOperation append(File fileName) {
+        Node nodeToAppend = xmlParser.parse(fileName)
+        nodes.each { Node node ->
+            node.append(nodeToAppend)
+        }
+        return this
+    }
+
+    FileOperation append(Closure closure) {
+        Node nodeToAppend = buildNodeFrom(closure)
+        nodes.each { Node node ->
+            node.append(nodeToAppend)
+        }
         return this
     }
 

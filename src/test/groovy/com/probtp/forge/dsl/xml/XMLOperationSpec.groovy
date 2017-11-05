@@ -39,6 +39,48 @@ class XMLOperationSpec extends Specification {
         node.dependencyManagement[0].dependencies[0].dependency[0].version[0].text() == "1.0.0"
     }
 
+    def "Append file to node"() {
+        setup :
+        Node node = buildNode({
+            project {
+                dependencyManagement {
+                    dependencies {
+
+                    }
+                }
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
+
+        when:
+        xmlOperation.append "src/test/resources/XMLOperationSpec/dependency" as File
+
+        then:
+        node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
+        node.dependencyManagement[0].dependencies[0].dependency[0].version[0].text() == "2.4.12"
+    }
+
+    def "Append file template to node"() {
+        setup :
+        Node node = buildNode({
+            project {
+                dependencyManagement {
+                    dependencies {
+
+                    }
+                }
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
+
+        when:
+        xmlOperation.append("src/test/resources/XMLOperationSpec/dependency_template.xml" as File, [version:1.0])
+
+        then:
+        node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
+        node.dependencyManagement[0].dependencies[0].dependency[0].version[0].text() == "1.0"
+    }
+
     def "Append two nodes"() {
         setup :
         Node node = buildNode({
