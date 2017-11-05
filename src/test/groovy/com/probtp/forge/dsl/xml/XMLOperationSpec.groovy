@@ -53,7 +53,7 @@ class XMLOperationSpec extends Specification {
         XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
 
         when:
-        xmlOperation.append "src/test/resources/XMLOperationSpec/dependency" as File
+        xmlOperation.append "src/test/resources/xml/XMLOperationSpec/dependency" as File
 
         then:
         node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
@@ -74,7 +74,7 @@ class XMLOperationSpec extends Specification {
         XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
 
         when:
-        xmlOperation.append("src/test/resources/XMLOperationSpec/dependency_template.xml" as File, [version:1.0])
+        xmlOperation.append("src/test/resources/xml/XMLOperationSpec/dependency_template.xml" as File, [version:1.0])
 
         then:
         node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
@@ -476,7 +476,7 @@ class XMLOperationSpec extends Specification {
 
     def "Append on spring xml file with namespace"() {
         setup :
-        Node node = new XmlParser().parse(new File("./src/test/resources/services-config.xml"))
+        Node node = new XmlParser().parse(new File("./src/test/resources/xml/services-config.xml"))
         XMLOperation xmlOperation = XMLOperation.create(node, "beans")
 
         when:

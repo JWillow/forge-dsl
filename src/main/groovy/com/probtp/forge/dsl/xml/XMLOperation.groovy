@@ -126,8 +126,4 @@ class XMLOperation implements FileOperation {
         return new XMLOperation(nodes:nodes)
     }
 
-    static XMLOperation create(File file, String path) {
-        XmlParser parser = new XmlParser()
-        return create(parser.parse(file), path)
-    }
 }

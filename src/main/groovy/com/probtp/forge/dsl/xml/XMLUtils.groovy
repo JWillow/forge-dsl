@@ -4,11 +4,17 @@ import groovy.xml.QName
 
 class XMLUtils {
 
-    static hasSameName(Node node, String name) {
-        Object nodeName = node.name();
-        if (nodeName instanceof QName) {
-            QName qn = (QName) nodeName;
-            return qn.matches(name)
+    static hasSameName(Object node, String name) {
+        Object nodeName
+        if(node instanceof Node) {
+             nodeName = node.name()
+
+            if (nodeName instanceof QName) {
+                QName qn = (QName) nodeName
+                return qn.matches(name)
+            }
+        } else {
+            nodeName = node
         }
         return name == nodeName
     }

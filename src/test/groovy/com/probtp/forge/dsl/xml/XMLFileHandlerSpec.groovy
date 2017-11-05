@@ -6,7 +6,7 @@ class XMLFileHandlerSpec extends Specification {
     def "save xml modification"() {
         setup:
         String workingFileName = "ibm-web-bnd.xml"
-        new AntBuilder().copy(file:"./src/test/resources/ibm-web-bnd.xml",
+        new AntBuilder().copy(file:"./src/test/resources/xml/ibm-web-bnd.xml",
                 tofile:"./target/$workingFileName")
         XMLFileHandler xmlFileHandler = XMLFileHandler.handle(new File("./target/$workingFileName"))
         XMLOperation xmlOperation = xmlFileHandler.'web-bnd'
@@ -26,7 +26,7 @@ class XMLFileHandlerSpec extends Specification {
 
     def "Generate path from missing Property method"() {
         setup:
-        XMLFileHandler xmlFileHandler = XMLFileHandler.handle(new File("./src/test/resources/jboss-web.xml"))
+        XMLFileHandler xmlFileHandler = XMLFileHandler.handle(new File("./src/test/resources/xml/jboss-web.xml"))
 
         when:
         XMLOperation operation = xmlFileHandler.'context-root'

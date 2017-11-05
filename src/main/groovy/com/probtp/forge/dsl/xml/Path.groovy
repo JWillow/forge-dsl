@@ -39,7 +39,7 @@ class Path {
         if (hasSameName(root, pathElements[0].get())) {
             workingNodes = new NodeList([root])
         } else {
-            workingNodes = root.depthFirst().findAll { Node node ->
+            workingNodes = root.depthFirst().findAll { Object node ->
                 hasSameName(node, pathElements[0].get())
             }
         }
