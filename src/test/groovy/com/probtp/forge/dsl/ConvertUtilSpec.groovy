@@ -34,8 +34,8 @@ class ConvertUtilSpec extends Specification {
         then:
         node != null
         node.children().size() == 2
-        node."&enum"[0].text() == "value1"
-        node."&enum"[1].text() == "value2"
+        node."&sequence"[0].text() == "value1"
+        node."&sequence"[1].text() == "value2"
     }
 
     def "simple structure with map value - one root node"() {
@@ -46,7 +46,7 @@ class ConvertUtilSpec extends Specification {
         node != null
         node.children().size() == 1
         node.subtest[0].children().size() == 2
-        node.subtest[0]."&enum"[0].text() == "value1"
-        node.subtest[0]."&enum"[1].text() == "value2"
+        node.subtest[0]."&sequence"[0].text() == "value1"
+        node.subtest[0]."&sequence"[1].text() == "value2"
     }
 }

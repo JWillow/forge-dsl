@@ -24,6 +24,9 @@ class ConvertUtil {
         root.setValue(value)
     }
 
+    static Map<String, Object> convert(Node node) {
+        //TODO
+    }
     static Node convert(Map<String, Object> structure) {
         Node node = null
         if(structure.keySet().size() > 1) {
