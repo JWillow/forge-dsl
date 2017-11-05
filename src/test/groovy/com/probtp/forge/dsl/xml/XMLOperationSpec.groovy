@@ -2,6 +2,7 @@ package com.probtp.forge.dsl.xml
 
 import groovy.xml.QName
 import groovy.xml.StreamingMarkupBuilder
+import groovy.xml.XmlUtil
 import spock.lang.Specification
 
 class XMLOperationSpec extends Specification {
@@ -442,44 +443,6 @@ class XMLOperationSpec extends Specification {
         node.dependencyManagement[0].dependencies[0].children().size() == 2
     }
 
-    def "Append with namespace"(){
-        setup:
-        Node node = new XmlParser().parse(new File("./src/test/resources/services-config.xml"))
-        Node otherNode = buildNode({
-            mkp.declareNamespace( tx: "http://www.springframework.org/schema/tx" )
-            project {
-                mkp.yield("testremy")
-                'dependencyManagement' {
-                    dependencies {
-                        dependency {
-                            'tx:artifactId'('artifact1')
-                            version('3.0.0')
-                        }
-                        dependency {
-                            'tx:artifactId'('artifact2')
-                            version('1.0.0')
-                            groupId('test')
-                        }
-                    }
-                }
-            }
-        })
-
-        when:
-        println "PRINT"
-        /*println "1 " + node.name().getLocalPart()
-        println "2 " + node.name().getNamespaceURI()
-        println "3 " + node.name().getPrefix()
-        println "4 " + node.name().getQualifiedName()
-        println "Test"
-        println node.@xsi*/
-
-        then:
-        show(otherNode)
-           node != null
-
-    }
-
     def "Append on spring xml file with namespace"() {
         setup :
         Node node = new XmlParser().parse(new File("./src/test/resources/services-config.xml"))
@@ -487,12 +450,15 @@ class XMLOperationSpec extends Specification {
 
         when:
         xmlOperation.append {
-            mkp.declareNamespace( tx: "http://www.springframework.org/schema/tx@http://www.springframework.org/schema/tx/spring-tx.xsd" )
-            'tx:annotation-driven'('transaction-manager':'transactionManagerRLE')
+            mkp.declareNamespace( tx: "http://www.springframework.org/schema/tx" )
+            'tx:annotation-driven'('transaction-manager':'transactionManager')
         }
 
         then:
-        show(node)
+        xmlOperation.nodes.'tx:annotation-driven' != null
+        println xmlOperation.nodes.'tx:annotation-driven'["@transaction-manager"].getClass()
+        xmlOperation.nodes.'tx:annotation-driven'["@transaction-manager"][0] == "transactionManager"
+
     }
 
 }
