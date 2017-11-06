@@ -20,7 +20,8 @@ class YAMLFileHandler implements FileHandler{
     }
 
     void save() {
-
+        PrintWriter printWriter = new PrintWriter(file)
+        saveTo(printWriter)
     }
 
     @Override
