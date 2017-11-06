@@ -15,7 +15,6 @@ class YAMLFileHandler implements FileHandler{
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
         options.setPrettyFlow(true)
-        options.set
         Yaml parser = new Yaml(options)
         parser.dump(ConvertUtil.convertFromNode(node), writer)
     }
