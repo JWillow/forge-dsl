@@ -9,6 +9,7 @@ import groovy.xml.StreamingMarkupBuilder
 class XMLOperation implements FileOperation {
 
     private NodeList nodes
+    private Path path
     private StreamingMarkupBuilder streamingMarkupBuilder = new StreamingMarkupBuilder()
     private XmlParser xmlParser = new XmlParser()
 
@@ -24,7 +25,7 @@ class XMLOperation implements FileOperation {
         return xmlParser.parseText(streamingMarkupBuilder.bind(closure).toString())
     }
 
-    FileOperation append(File fileName, Map<String,Object> parameters) {
+    FileOperation append(File fileName, Map<String, Object> parameters) {
         SimpleTemplateEngine templateEngine = new SimpleTemplateEngine()
         String result = templateEngine.createTemplate(fileName).make(parameters)
         Node nodeToAppend = xmlParser.parseText(result)
@@ -51,7 +52,7 @@ class XMLOperation implements FileOperation {
     }
 
     FileOperation removeAll() {
-        if(nodes.isEmpty()) {
+        if (nodes.isEmpty()) {
             return this
         }
 
@@ -62,45 +63,65 @@ class XMLOperation implements FileOperation {
         return this
     }
 
+    boolean hasAttribute(Node node, Node nodeCriteria) {
+        return nodeCriteria.attributes().findAll { keyAttrCriteria, valueAttrCriteria ->
+            valueAttrCriteria == node.attribute(keyAttrCriteria)
+        }.size() == nodeCriteria.attributes().size()
+    }
+
+
+
     FileOperation grep(Closure closure) {
-        if(nodes.isEmpty()) {
+        if (nodes.isEmpty()) {
             return this
         }
         Node criteriaParam = buildNodeFrom(closure)
-        NodeList criterionTag
-        if(!hasSameName(criteriaParam,nodes[0])) {
-            criterionTag = new NodeList()
-            criterionTag << criteriaParam
-        } else {
-            criterionTag = criteriaParam.children()
-        }
+        NodeList criterionTag = []
+        criterionTag << criteriaParam
 
-        NodeList workingNodes = nodes
-        criterionTag.each {Node nodeCriteria ->
+        NodeList workingNodes = new NodeList()
+        nodes.each { Node node ->
+            workingNodes.addAll(node.depthFirst())
+        }
+        criterionTag.each { Node nodeCriteria ->
             workingNodes = workingNodes.findAll { Node node ->
-                def results = node.children().findAll {
-                    hasSameName(it, nodeCriteria)
-                }.findAll {
-                    it.text() == nodeCriteria.text()
+                hasSameName(node, nodeCriteria)
+            }
+            if(!nodeCriteria.attributes().isEmpty()) {
+                workingNodes = workingNodes.findAll { Node node ->
+                    hasAttribute(node, nodeCriteria)
                 }
-                return !results.isEmpty()
+            }
+            if(nodeCriteria.text() != null) {
+                workingNodes = workingNodes.findAll { Node node ->
+                    node.text() == nodeCriteria.text()
+                }
+            }
+        }
+        String leaf = path.last().get()
+        LinkedHashSet<Node> results = []
+        workingNodes.each {
+            Node result = XMLUtils.findParentByName(it, leaf)
+            if(result) {
+                results << result
             }
         }
 
         XMLOperation xmlOperation = new XMLOperation()
-        xmlOperation.nodes = new NodeList(workingNodes)
+        xmlOperation.nodes = new NodeList(results)
+        xmlOperation.path = path
         return xmlOperation
     }
 
 
     FileOperation transform(Closure closure) {
-        if(nodes.isEmpty()) {
+        if (nodes.isEmpty()) {
             return this
         }
         Node transformationParamNode = buildNodeFrom(closure)
         NodeList transformationParamNodes
 
-        if(!hasSameName(transformationParamNode, nodes[0])) {
+        if (!hasSameName(transformationParamNode, nodes[0])) {
             transformationParamNodes = new NodeList()
             transformationParamNodes << transformationParamNode
         } else {
@@ -109,7 +130,7 @@ class XMLOperation implements FileOperation {
 
         nodes.each { Node nodeToTransform ->
             transformationParamNodes.each { Node transformationNode ->
-                if(!nodeToTransform[transformationNode.name()].isEmpty()) {
+                if (!nodeToTransform[transformationNode.name()].isEmpty()) {
                     nodeToTransform.remove(nodeToTransform[transformationNode.name()][0])
                 }
                 nodeToTransform.append(transformationNode)
@@ -118,12 +139,14 @@ class XMLOperation implements FileOperation {
         return this
     }
 
-    static XMLOperation create(Node root, String path) {
-        NodeList nodes = Path.create(root, path).get()
-        if(nodes == null) {
+    static XMLOperation create(Node root, String strPath) {
+        Path path = Path.create(root, strPath)
+        NodeList nodes = path.get()
+        if (nodes == null) {
             nodes = new NodeList()
         }
-        return new XMLOperation(nodes:nodes)
+
+        return new XMLOperation(nodes: nodes, path:path)
     }
 
 }

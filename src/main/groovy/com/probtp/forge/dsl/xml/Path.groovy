@@ -10,6 +10,12 @@ class Path {
 
     private Path() {}
 
+    PathElement last() {
+        if(pathElements.isEmpty()) {
+            return null
+        }
+        return pathElements[pathElements.size() - 1]
+    }
     private NodeList _find(NodeList workingNodes, int pathElementIndex, boolean optionalModeEnable) {
         PathElement pathElement = pathElements[pathElementIndex]
         if(!optionalModeEnable) {

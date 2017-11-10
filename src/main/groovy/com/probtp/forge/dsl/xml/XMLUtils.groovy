@@ -4,6 +4,16 @@ import groovy.xml.QName
 
 class XMLUtils {
 
+    static Node findParentByName(Node node, String parentName) {
+        if(hasSameName(node, parentName)) {
+            return node
+        }
+        if(node.parent() != null) {
+            return findParentByName(node.parent(), parentName)
+        }
+        return null
+    }
+
     static hasSameName(Object node, String name) {
         Object nodeName
         if(node instanceof Node) {

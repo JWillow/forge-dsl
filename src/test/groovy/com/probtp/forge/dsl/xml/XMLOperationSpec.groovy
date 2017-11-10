@@ -13,7 +13,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append simple node"() {
-        setup :
+        setup:
         Node node = buildNode({
 
             project {
@@ -28,10 +28,10 @@ class XMLOperationSpec extends Specification {
 
         when:
         xmlOperation.append {
-                dependency {
-                    artifactId('mon artifact')
-                    version('1.0.0')
-                }
+            dependency {
+                artifactId('mon artifact')
+                version('1.0.0')
+            }
         }
 
         then:
@@ -40,7 +40,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append file to node"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -53,7 +53,7 @@ class XMLOperationSpec extends Specification {
         XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
 
         when:
-        xmlOperation.append "src/test/resources/xml/XMLOperationSpec/dependency" as File
+        xmlOperation.append "src/test/resources/xml/XMLOperationSpec/dependency.xml" as File
 
         then:
         node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
@@ -61,7 +61,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append file template to node"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -74,7 +74,7 @@ class XMLOperationSpec extends Specification {
         XMLOperation xmlOperation = XMLOperation.create(node, "dependencies")
 
         when:
-        xmlOperation.append("src/test/resources/xml/XMLOperationSpec/dependency_template.xml" as File, [version:1.0])
+        xmlOperation.append("src/test/resources/xml/XMLOperationSpec/dependency_template.xml" as File, [version: 1.0])
 
         then:
         node.dependencyManagement[0].dependencies[0].dependency[0].artifactId[0].text() == "groovy-all"
@@ -82,7 +82,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append two nodes"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -113,7 +113,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append on non existing nodes"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -142,7 +142,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, artifactId found"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -176,7 +176,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, on non existing path"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -205,7 +205,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, artifactId found with parent tag"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -241,7 +241,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, artifactId not found"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -270,7 +270,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, artifactId not found based on multi criteria"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -302,7 +302,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "grep, artifactId found based on multi criteria"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -324,7 +324,7 @@ class XMLOperationSpec extends Specification {
 
         when:
         XMLOperation otherXMLOperation = xmlOperation.grep {
-            dependency {
+            '_' {
                 artifactId('artifact2')
                 version('1.0.0')
             }
@@ -335,8 +335,50 @@ class XMLOperationSpec extends Specification {
         otherXMLOperation.nodes[0].groupId[0].text() == 'test'
     }
 
+    def "grep, find by attribute"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"security", class:"MaSecurity"])
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.grep {
+            bean(id:"security")
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 1
+        otherXMLOperation.nodes[0].@id == 'security'
+    }
+
+    def "grep, find by attribute, with two tag"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"transaction", class:"MaClass"]) {
+                    property([agent:"MonAgent"])
+                }
+                bean([id:"security", class:"MaSecurity"])
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.grep {
+            bean(id:"security")
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 1
+        otherXMLOperation.nodes[0].@id == 'security'
+    }
+
+
     def "Multiple transformation on existing node"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -370,7 +412,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Multiple transformation on non existing node, nothing is transform"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -393,7 +435,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Multiple transformation on non existing node, but optional mode is enable"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -417,7 +459,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "RemoveAll dependency nodes"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -446,7 +488,7 @@ class XMLOperationSpec extends Specification {
     }
 
     def "RemoveAll non existing nodes"() {
-        setup :
+        setup:
         Node node = buildNode({
             project {
                 dependencyManagement {
@@ -475,14 +517,14 @@ class XMLOperationSpec extends Specification {
     }
 
     def "Append on spring xml file with namespace"() {
-        setup :
+        setup:
         Node node = new XmlParser().parse(new File("./src/test/resources/xml/services-config.xml"))
         XMLOperation xmlOperation = XMLOperation.create(node, "beans")
 
         when:
         xmlOperation.append {
-            mkp.declareNamespace( tx: "http://www.springframework.org/schema/tx" )
-            'tx:annotation-driven'('transaction-manager':'transactionManager')
+            mkp.declareNamespace(tx: "http://www.springframework.org/schema/tx")
+            'tx:annotation-driven'('transaction-manager': 'transactionManager')
         }
 
         then:
