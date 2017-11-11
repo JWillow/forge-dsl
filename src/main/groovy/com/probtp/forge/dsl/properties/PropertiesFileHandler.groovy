@@ -18,7 +18,7 @@ class PropertiesFileHandler implements FileHandler {
     }
 
     void saveTo(Writer writer) {
-        write(writer, node.children(), "")
+        write(writer, node.children(), null)
     }
 
     private write(Writer writer, Object value, String path) {
@@ -30,6 +30,12 @@ class PropertiesFileHandler implements FileHandler {
                         nPath= it.name()
                     } else {
                         nPath = "${path}.${it.name()}"
+                    }
+                    if(it instanceof Node) {
+                        Object attrValue = it.attribute("value")
+                        if(attrValue) {
+                            writer.println("$nPath=${attrValue}")
+                        }
                     }
                     write(writer, it, nPath)
                 } else {
@@ -47,7 +53,7 @@ class PropertiesFileHandler implements FileHandler {
         properties.each { String key, String value ->
             NodeList nodes = Path.create(key, true).get(root)
             nodes.each { Node node ->
-                node.setValue(value)
+                node.attributes().put("value",value)
             }
         }
         handler.node = root

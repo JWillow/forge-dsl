@@ -10,14 +10,14 @@ class PropertiesFileHandlerSpec extends Specification {
         StringWriter writer = new StringWriter()
         File file = new File("./file.properties")
         file << "application.db.url=apache.org\n"
-        file << "application.db.password=comanche\n"
+        file << "application.db.password=commanche\n"
 
         when:
         PropertiesFileHandler handler = PropertiesFileHandler.handle(file)
         handler.saveTo(writer)
 
         then:
-        writer.toString() == "application.db.password=comanche\n" +
+        writer.toString() == "application.db.password=commanche\n" +
                 "application.db.url=apache.org\n"
 
         cleanup:
@@ -33,6 +33,8 @@ class PropertiesFileHandlerSpec extends Specification {
         FileOperation operation = PropertiesFileHandler.handle(file)."appender.stdout"
 
         then:
-        operation.size() == 3
+        operation.size() == 1
+        operation.nodes[0].'@value' == "org.apache.log4j.ConsoleAppender"
+        operation.nodes.size() == 1
     }
 }

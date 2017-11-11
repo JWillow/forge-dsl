@@ -488,6 +488,25 @@ class XMLOperationSpec extends Specification {
         otherXMLOperation.nodes[1].version[0].text() == '4.0.0'
     }
 
+    def "Transformation on attribute"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"id",class:"class"])
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.transform {
+            bean([class:"otherClass"])
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 1
+        otherXMLOperation.nodes[0].'@class' == 'otherClass'
+    }
+
     def "Multiple transformation on non existing node, nothing is transform"() {
         setup:
         Node node = buildNode({
