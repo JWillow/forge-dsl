@@ -1,5 +1,8 @@
 package com.probtp.forge.dsl
 
+import com.probtp.forge.dsl.yaml.YAMLFileHandler
+
+import static com.probtp.forge.dsl.FileUtils.Extension.*
 import com.probtp.forge.dsl.xml.XMLFileHandler
 
 class Project {
@@ -10,14 +13,13 @@ class Project {
 
     FileHandler getAt(String pathExpression) {
         File file = new File(rootDir, pathExpression)
-        String[] tokens = file.toPath().getFileName().toString().split("\\.")
-        if(tokens.size() != 2) {
-            throw new IllegalArgumentException()
-        }
         FileHandler fileHandler
-        switch (tokens[1]) {
-            case "xml":
+        switch (FileUtils.getExtension(file)) {
+            case XML:
                 fileHandler = XMLFileHandler.handle(file)
+                break
+            case YAML:
+                fileHandler = YAMLFileHandler.handle(file)
                 break
             default:
                 return null

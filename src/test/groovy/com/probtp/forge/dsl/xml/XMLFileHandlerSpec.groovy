@@ -5,10 +5,10 @@ import spock.lang.Specification
 class XMLFileHandlerSpec extends Specification {
     def "save xml modification"() {
         setup:
-        String workingFileName = "ibm-web-bnd.xml"
+        File toFile = new File("./target/ibm-web-bnd.xml")
         new AntBuilder().copy(file:"./src/test/resources/xml/ibm-web-bnd.xml",
-                tofile:"./target/$workingFileName")
-        XMLFileHandler xmlFileHandler = XMLFileHandler.handle(new File("./target/$workingFileName"))
+                tofile:toFile)
+        XMLFileHandler xmlFileHandler = XMLFileHandler.handle(toFile)
         XMLOperation xmlOperation = xmlFileHandler.'web-bnd'
 
         when:
@@ -18,10 +18,13 @@ class XMLFileHandlerSpec extends Specification {
         xmlFileHandler.save()
 
         then:
-        XMLFileHandler otherXmlFileHandler = XMLFileHandler.handle(new File("./target/$workingFileName"))
+        XMLFileHandler otherXmlFileHandler = XMLFileHandler.handle(toFile)
         XMLOperation otherXMLOperation = otherXmlFileHandler.tag
         otherXMLOperation.nodes.size() == 1
         otherXMLOperation.nodes[0].text() == "payload"
+
+        cleanup:
+        toFile.deleteOnExit()
     }
 
     def "Generate path from missing Property method"() {

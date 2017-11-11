@@ -24,15 +24,14 @@ class YAMLFileHandler implements FileHandler{
         saveTo(printWriter)
     }
 
-    @Override
-    Object getProperty(String property) {
-        return XMLOperation.create(node, property)
+    Object propertyMissing(String path) {
+        return XMLOperation.create(node, path)
     }
 
-    static YAMLFileHandler handle(String yaml) {
+    static YAMLFileHandler handle(String strYAML) {
         YAMLFileHandler handler = new YAMLFileHandler()
         Yaml parser = new Yaml()
-        handler.node = ConvertUtil.convert(parser.load(yaml))
+        handler.node = ConvertUtil.convert(parser.load(strYAML))
         return handler
     }
 

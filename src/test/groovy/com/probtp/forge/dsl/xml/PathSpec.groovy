@@ -27,6 +27,26 @@ class PathSpec extends Specification {
         path.get(node).isEmpty()
     }
 
+    def "Search existing node from root"() {
+        when:
+        def path = Path.create("project.dependencyManagement")
+        def node = buildNode({
+            project {
+                dependencyManagement {
+                    dependencies {
+                        dependency ("payload")
+                    }
+                }
+            }
+        })
+        then:
+        NodeList nodes = path.get(node)
+        nodes.size() == 1
+        nodes[0].parent().name() == "project"
+        nodes[0].children().size() == 1
+        nodes[0].children()[0].name() == "dependencies"
+    }
+
     def "Search existing node"() {
         when:
         def path = Path.create("dependencies")

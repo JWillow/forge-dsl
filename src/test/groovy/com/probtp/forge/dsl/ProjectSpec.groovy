@@ -22,6 +22,7 @@ class ProjectSpec extends Specification {
 
         when:
         def xmlOperation = project['pom.xml']."properties.'project.build.sourceEncoding'"
+
         then:
         xmlOperation != null
         xmlOperation.nodes.size() == 1

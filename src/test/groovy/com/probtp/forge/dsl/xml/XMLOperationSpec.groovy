@@ -606,9 +606,7 @@ class XMLOperationSpec extends Specification {
 
         then:
         xmlOperation.nodes.'tx:annotation-driven' != null
-        println xmlOperation.nodes.'tx:annotation-driven'["@transaction-manager"].getClass()
         xmlOperation.nodes.'tx:annotation-driven'["@transaction-manager"][0] == "transactionManager"
-
     }
 
 }

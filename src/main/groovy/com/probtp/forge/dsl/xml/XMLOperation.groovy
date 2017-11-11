@@ -4,6 +4,9 @@ import com.probtp.forge.dsl.FileOperation
 import groovy.text.SimpleTemplateEngine
 import groovy.xml.StreamingMarkupBuilder
 
+import static com.probtp.forge.dsl.FileUtils.Extension.XML
+import static com.probtp.forge.dsl.FileUtils.Extension.*
+import static com.probtp.forge.dsl.FileUtils.getExtension
 import static com.probtp.forge.dsl.xml.XMLUtils.*
 
 class XMLOperation implements FileOperation {
@@ -34,15 +37,26 @@ class XMLOperation implements FileOperation {
         String result = templateEngine.createTemplate(fileName).make(parameters)
         Node nodeToAppend = xmlParser.parseText(result)
         nodes.each { Node node ->
-            node.append(nodeToAppend)
+            node.append(nodeToAppend.clone())
         }
         return this
     }
 
-    FileOperation append(File fileName) {
-        Node nodeToAppend = xmlParser.parse(fileName)
-        nodes.each { Node node ->
-            node.append(nodeToAppend)
+    FileOperation append(File file) {
+        switch (getExtension(file)) {
+            case XML:
+                Node nodeToAppend = xmlParser.parse(file)
+                nodes.each {
+                    Node node ->
+                        node.append(nodeToAppend.clone())
+                }
+                break
+            case YAML:
+                AppenderUtils.appendFromYAML(file, nodes)
+                break
+            case GROOVY:
+                AppenderUtils.appendFromGroovy(file, nodes)
+                break
         }
         return this
     }
@@ -66,12 +80,11 @@ class XMLOperation implements FileOperation {
         return this
     }
 
-    @Override
-    Object getProperty(String property) {
+    Object propertyMissing(String property) {
         // Property : translate to path
         Path path = Path.create(property)
         NodeList workingNodes = new NodeList()
-        nodes.each {Node node ->
+        nodes.each { Node node ->
             workingNodes.addAll((Collection) path.get(node))
         }
         XMLOperation xmlOperation = new XMLOperation()
@@ -80,32 +93,32 @@ class XMLOperation implements FileOperation {
         return xmlOperation
     }
 
-    boolean hasAttribute(Node node, Node nodeCriteria) {
+    static boolean hasAttribute(Node node, Node nodeCriteria) {
         return nodeCriteria.attributes().findAll { keyAttrCriteria, valueAttrCriteria ->
             valueAttrCriteria == node.attribute(keyAttrCriteria)
         }.size() == nodeCriteria.attributes().size()
     }
 
     boolean grep(Node criteria, Node candidate) {
-        if(!hasSameName(candidate, criteria)) {
+        if (!hasSameName(candidate, criteria)) {
             return false
         }
-        if(!criteria.attributes().isEmpty()) {
-            if(!hasAttribute(candidate, criteria)) {
+        if (!criteria.attributes().isEmpty()) {
+            if (!hasAttribute(candidate, criteria)) {
                 return false
             }
         }
         Object valueCriteria = value(criteria)
-        if(valueCriteria) {
-            if(value(candidate) != valueCriteria) {
+        if (valueCriteria) {
+            if (value(candidate) != valueCriteria) {
                 return false
             }
         }
-        if(!children(criteria).isEmpty()) {
-            if(children(candidate).isEmpty()) {
+        if (!children(criteria).isEmpty()) {
+            if (children(candidate).isEmpty()) {
                 return false
             }
-            return criteria.children().findAll {Node childCriteria ->
+            return criteria.children().findAll { Node childCriteria ->
                 candidate.children().find { Node childCandidate ->
                     grep(childCriteria, childCandidate)
                 }
@@ -118,14 +131,14 @@ class XMLOperation implements FileOperation {
         if (nodes.isEmpty()) {
             return this
         }
-        Node criteria =  buildNodeFrom(closure)
+        Node criteria = buildNodeFrom(closure)
         NodeList workingNodes = new NodeList()
         workingNodes.addAll(nodes)
-        nodes.each {Node candidate ->
+        nodes.each { Node candidate ->
             workingNodes.addAll(candidate.depthFirst())
         }
 
-        workingNodes = workingNodes.findAll {Node candidate ->
+        workingNodes = workingNodes.findAll { Node candidate ->
             grep(criteria, candidate)
         }
 
@@ -134,7 +147,7 @@ class XMLOperation implements FileOperation {
         LinkedHashSet<Node> results = []
         workingNodes.each {
             Node result = XMLUtils.findParentByName(it, leafPathName)
-            if(result) {
+            if (result) {
                 results << result
             }
         }
@@ -177,8 +190,7 @@ class XMLOperation implements FileOperation {
         if (nodes == null) {
             nodes = new NodeList()
         }
-
-        return new XMLOperation(nodes: nodes, path:path)
+        return new XMLOperation(nodes: nodes, path: path)
     }
 
 }

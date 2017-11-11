@@ -9,7 +9,7 @@ class DSLSpec extends Specification {
         setup:
         Project project = new Project(rootDir: new File("."))
         XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
-        assert xmlOperationDependencyTag.grep{scope("test")}.size() == 6
+        assert xmlOperationDependencyTag.grep{scope("test")}.size() == 7
         assert xmlOperationDependencyTag.grep{scope("compile")}.size() == 1
 
         when:

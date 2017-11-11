@@ -2,6 +2,8 @@ package com.probtp.forge.dsl.yaml
 
 import spock.lang.Specification
 
+import java.nio.file.Path
+
 class YAMLFileHandlerSpec extends Specification {
 
     def "simple test"() {
@@ -105,16 +107,47 @@ class YAMLFileHandlerSpec extends Specification {
                 "- saumon\n"
     }
 
-    def "simple save test"() {
+    def "Append YAML"() {
         setup:
-        YAMLFileHandler handler = YAMLFileHandler.handle("src/test/resources/yaml/simple.yml" as File)
+        StringWriter writer = new StringWriter()
+        YAMLFileHandler handler = YAMLFileHandler.handle("""
+            product:
+                - sku         : BL394D
+                  quantity    : 4
+                  description : Basketball
+                  price       : 450.00
+                - sku         : BL4438H
+                  quantity    : 1
+                  description : Super Hoop
+                  price       : 2392.00
+        """)
+
+        File file = new File("file.yaml")
+        file << "ingredients: ['riz', 'vinaigre']"
 
         when:
-        StringWriter writer = new StringWriter()
+        handler."product.&sequence.sku".append file
         handler.saveTo(writer)
-        String output = writer.toString()
 
         then:
-        println output
+        writer.toString() == "product:\n" +
+                "- sku:\n" +
+                "    ingredients:\n" +
+                "    - riz\n" +
+                "    - vinaigre\n" +
+                "  quantity: 4\n" +
+                "  description: Basketball\n" +
+                "  price: 450.0\n" +
+                "- sku:\n" +
+                "    ingredients:\n" +
+                "    - riz\n" +
+                "    - vinaigre\n" +
+                "  quantity: 1\n" +
+                "  description: Super Hoop\n" +
+                "  price: 2392.0\n"
+
+
+        cleanup:
+        file.deleteOnExit()
     }
 }
