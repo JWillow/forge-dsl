@@ -10,9 +10,10 @@ class PathSpec extends Specification {
         return new XmlParser().parseText(xml)
     }
 
-    def "Search existing node"() {
+    def "Path return empty list if it found nothing"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("bean")
+        def node = buildNode({
             project {
                 dependencyManagement {
                     dependencies {
@@ -20,9 +21,26 @@ class PathSpec extends Specification {
                     }
                 }
             }
-        }), "dependencies")
+        })
+
         then:
-        NodeList nodes = path.get()
+        path.get(node).isEmpty()
+    }
+
+    def "Search existing node"() {
+        when:
+        def path = Path.create("dependencies")
+        def node = buildNode({
+            project {
+                dependencyManagement {
+                    dependencies {
+                        dependency ("payload")
+                    }
+                }
+            }
+        })
+        then:
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].parent().name() == "dependencyManagement"
         nodes[0].children().size() == 1
@@ -31,7 +49,8 @@ class PathSpec extends Specification {
 
     def "Search existing nodes in different parent"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("dependency.artifactId")
+        def node = buildNode({
             project {
                 dependencyManagement {
                     dependencies {
@@ -46,9 +65,9 @@ class PathSpec extends Specification {
                     }
                 }
             }
-        }), "dependency.artifactId")
+        })
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 2
         nodes[0].text() == "dartifact1"
         nodes[1].text() == "artifact2"
@@ -60,7 +79,8 @@ class PathSpec extends Specification {
 
     def "Search existing nodes in different parent, with other parent hierarchy"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("dependency.artifactId")
+        def node = buildNode({
             project {
                 dependencyManagement {
                     dependencies {
@@ -81,9 +101,9 @@ class PathSpec extends Specification {
                     }
                 }
             }
-        }), "dependency.artifactId")
+        })
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 3
         nodes[0].text() == "dartifact1"
         nodes[1].text() == "artifact2"
@@ -92,7 +112,8 @@ class PathSpec extends Specification {
 
     def "Search existing node, one true path"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("project.dependencies.dependency")
+        def node = buildNode({
             project {
                 dependencyManagement {
                     dependencies {
@@ -113,16 +134,17 @@ class PathSpec extends Specification {
                     }
                 }
             }
-        }), "project.dependencies.dependency")
+        })
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].artifactId.text() == "artifact3"
     }
 
     def "Search existing node, dependencyManagement path"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("dependencyManagement.dependencies.dependency")
+        def node = buildNode({
             project {
                 dependencyManagement {
                     dependencies {
@@ -143,9 +165,10 @@ class PathSpec extends Specification {
                     }
                 }
             }
-        }), "dependencyManagement.dependencies.dependency")
+        })
+
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 2
         nodes[0].artifactId.text() == "artifact1"
         nodes[1].artifactId.text() == "artifact2"
@@ -153,12 +176,14 @@ class PathSpec extends Specification {
 
     def "Search not existing parent node"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("dependencyManagement?.dependencies")
+        def node = buildNode({
             project {
             }
-        }), "dependencyManagement?.dependencies")
+        })
+
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].name() == "dependencies"
         nodes[0].parent().name() == "dependencyManagement"
@@ -168,13 +193,15 @@ class PathSpec extends Specification {
 
     def "Search not existing child node"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("dependencyManagement.dependencies?")
+        def node = buildNode({
             project {
                 dependencyManagement {}
             }
-        }), "dependencyManagement.dependencies?")
+        })
+
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].name() == "dependencies"
         nodes[0].parent().name() == "dependencyManagement"
@@ -184,59 +211,63 @@ class PathSpec extends Specification {
 
     def "node properties with child with dot in name"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("properties")
+        def node = buildNode({
             project {
                 properties {
                     'project.build.sourceEncoding'('UTF-8')
                 }
             }
-        }), "properties")
+        })
+
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].children()[0].text() == "UTF-8"
     }
 
     def "node syntax dot"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("properties.'project.build.sourceEncoding'")
+        def node = buildNode({
             project {
                 properties {
                     'project.build.sourceEncoding'('UTF-8')
                 }
             }
-        }), "properties.'project.build.sourceEncoding'")
+        })
 
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].text() == "UTF-8"
     }
 
     def "node syntax dot, optional mode enable"() {
         when:
-        def path = Path.create(buildNode({
+        def path = Path.create("properties.'project.build.sourceEncoding'?")
+        def node = buildNode({
             project {
                 properties {
                 }
             }
-        }), "properties.'project.build.sourceEncoding'?")
+        })
 
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].parent().name() == "properties"
     }
 
     def "node syntax dot, from file"() {
         setup:
-        Node node = new XmlParser().parse(new File('src/test/resources/pomTest.xml'))
+        Node node = new XmlParser().parse(new File('src/test/resources/xml/pomTest.xml'))
 
         when:
-        def path = Path.create(node, "properties.'project.build.sourceEncoding'")
+        def path = Path.create("properties.'project.build.sourceEncoding'")
 
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         nodes.size() == 1
         nodes[0].text() == "UTF-8"
     }
@@ -244,14 +275,14 @@ class PathSpec extends Specification {
     def "with namespace, spring file" () {
 
         setup:
-        Node node = new XmlParser().parse(new File('src/test/resources/services-config.xml'))
+        Node node = new XmlParser().parse(new File('src/test/resources/xml/services-config.xml'))
 
         when:
-        def path = Path.create(node, "tx:annotation-driven")
+        def path = Path.create("jee:jndi-lookup")
 
         then:
-        NodeList nodes = path.get()
+        NodeList nodes = path.get(node)
         // <tx:annotation-driven transaction-manager="transactionManager" />
-        nodes[0]['@transaction-manager'] == "transactionManager"
+        nodes[0]['@id'] == "entityManagerFactory"
     }
 }

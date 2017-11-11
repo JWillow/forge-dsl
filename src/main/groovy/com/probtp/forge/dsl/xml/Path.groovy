@@ -6,8 +6,6 @@ import groovy.transform.ToString
 @ToString(includeNames=true,includeFields=true)
 class Path {
     private List<PathElement> pathElements
-    private Node root
-
     private Path() {}
 
     PathElement last() {
@@ -16,13 +14,14 @@ class Path {
         }
         return pathElements[pathElements.size() - 1]
     }
+
     private NodeList _find(NodeList workingNodes, int pathElementIndex, boolean optionalModeEnable) {
         PathElement pathElement = pathElements[pathElementIndex]
         if(!optionalModeEnable) {
             optionalModeEnable = pathElement.isOptional()
         }
         NodeList results = new NodeList(workingNodes.findResults{
-            NodeList nodes = it[pathElement.get()]
+            NodeList nodes = (NodeList) it[pathElement.get()]
             return !nodes.isEmpty() ? nodes : null
         }).flatten()
         if(results.isEmpty()) {
@@ -40,7 +39,7 @@ class Path {
         return _find(results, ++pathElementIndex, optionalModeEnable)
     }
 
-    NodeList get() {
+    NodeList get(Node root) {
         NodeList workingNodes
         if (hasSameName(root, pathElements[0].get())) {
             workingNodes = new NodeList([root])
@@ -54,7 +53,7 @@ class Path {
             if (pathElements[0].isOptional()) {
                 workingNodes = new NodeList([root.appendNode(pathElements[0].get())])
             } else {
-                return null
+                return new NodeList()
             }
         }
 
@@ -64,7 +63,7 @@ class Path {
         return workingNodes
     }
 
-    static Path create(Node root, String path) {
+    static Path create(String path) {
         def pathElements = []
         StringBuffer  word = new StringBuffer()
         boolean quoteEnable = false
@@ -79,8 +78,6 @@ class Path {
             }
         }
         pathElements << PathElement.fromRawPathElement(word.toString())
-
-
-        return new Path(root:root, pathElements:pathElements)
+        return new Path(pathElements:pathElements)
     }
 }

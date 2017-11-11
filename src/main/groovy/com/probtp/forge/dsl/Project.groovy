@@ -18,11 +18,13 @@ class Project {
         switch (tokens[1]) {
             case "xml":
                 fileHandler = XMLFileHandler.handle(file)
+                break
             default:
                 return null
 
         }
         fileHandlers << fileHandler
+        return fileHandler
     }
 
     void save() {

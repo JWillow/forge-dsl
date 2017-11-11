@@ -17,6 +17,10 @@ class XMLOperation implements FileOperation {
         return nodes
     }
 
+    int size() {
+        return nodes.size()
+    }
+
     boolean isEmpty() {
         return nodes.isEmpty()
     }
@@ -60,6 +64,20 @@ class XMLOperation implements FileOperation {
         }
         nodes = new NodeList()
         return this
+    }
+
+    @Override
+    Object getProperty(String property) {
+        // Property : translate to path
+        Path path = Path.create(property)
+        NodeList workingNodes = new NodeList()
+        nodes.each {Node node ->
+            workingNodes.addAll((Collection) path.get(node))
+        }
+        XMLOperation xmlOperation = new XMLOperation()
+        xmlOperation.nodes = workingNodes
+        xmlOperation.path = path
+        return xmlOperation
     }
 
     boolean hasAttribute(Node node, Node nodeCriteria) {
@@ -154,8 +172,8 @@ class XMLOperation implements FileOperation {
     }
 
     static XMLOperation create(Node root, String strPath) {
-        Path path = Path.create(root, strPath)
-        NodeList nodes = path.get()
+        Path path = Path.create(strPath)
+        NodeList nodes = path.get(root)
         if (nodes == null) {
             nodes = new NodeList()
         }
