@@ -118,11 +118,9 @@ class XMLOperationSpec extends Specification {
             project {
                 dependencyManagement {
                     dependencies {
-
                     }
                 }
                 dependencies {
-
                 }
             }
         })
@@ -324,7 +322,7 @@ class XMLOperationSpec extends Specification {
 
         when:
         XMLOperation otherXMLOperation = xmlOperation.grep {
-            '_' {
+            dependency {
                 artifactId('artifact2')
                 version('1.0.0')
             }
@@ -374,6 +372,85 @@ class XMLOperationSpec extends Specification {
         then:
         otherXMLOperation.nodes.size() == 1
         otherXMLOperation.nodes[0].@id == 'security'
+    }
+
+    def "grep, find by attribute, with two tag and an inner tag criteria on attribute"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"transaction", class:"MaClass"]) {
+                    property([agent:"MonAgent"])
+                }
+                bean([id:"security", class:"MaSecurity"])
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.grep {
+            bean(id:"transaction") {
+                property([agent:"MonAgent"])
+            }
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 1
+        otherXMLOperation.nodes[0].@id == 'transaction'
+    }
+
+    def "grep, not find by attribute, with two tag and an inner tag criteria on attribute"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"transaction", class:"MaClass"]) {
+                    property([agent:"MonAgent"])
+                }
+                bean([id:"security", class:"MaSecurity"])
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.grep {
+            bean(id:"transaction") {
+                property([agent:"MyAgentNotExist"])
+            }
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 0
+    }
+
+    def "grep, find by attribute, with two tag and an inner tag criteria on value"() {
+        setup:
+        Node node = buildNode({
+            beans {
+                bean([id:"transaction", class:"MaClass"]) {
+                    property {
+                        "test"
+                    }
+                }
+                bean([id:"security", class:"MaSecurity"]) {
+                    property {
+                        "test"
+                    }
+                }
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "beans.bean")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.grep {
+            bean(id:"transaction") {
+                property {
+                    "test"
+                }
+            }
+        }
+
+        then:
+        otherXMLOperation.nodes.size() == 1
+        otherXMLOperation.nodes[0].@class == 'MaClass'
     }
 
 

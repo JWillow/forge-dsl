@@ -2,9 +2,9 @@ package com.probtp.forge.dsl.xml
 
 import com.probtp.forge.dsl.FileOperation
 import groovy.text.SimpleTemplateEngine
-
-import static com.probtp.forge.dsl.xml.XMLUtils.hasSameName
 import groovy.xml.StreamingMarkupBuilder
+
+import static com.probtp.forge.dsl.xml.XMLUtils.*
 
 class XMLOperation implements FileOperation {
 
@@ -55,7 +55,6 @@ class XMLOperation implements FileOperation {
         if (nodes.isEmpty()) {
             return this
         }
-
         nodes.each { Node node ->
             node.parent().remove(node)
         }
@@ -69,39 +68,54 @@ class XMLOperation implements FileOperation {
         }.size() == nodeCriteria.attributes().size()
     }
 
-
+    boolean grep(Node criteria, Node candidate) {
+        if(!hasSameName(candidate, criteria)) {
+            return false
+        }
+        if(!criteria.attributes().isEmpty()) {
+            if(!hasAttribute(candidate, criteria)) {
+                return false
+            }
+        }
+        Object valueCriteria = value(criteria)
+        if(valueCriteria) {
+            if(value(candidate) != valueCriteria) {
+                return false
+            }
+        }
+        if(!children(criteria).isEmpty()) {
+            if(children(candidate).isEmpty()) {
+                return false
+            }
+            return criteria.children().findAll {Node childCriteria ->
+                candidate.children().find { Node childCandidate ->
+                    grep(childCriteria, childCandidate)
+                }
+            }.size() == criteria.children().size()
+        }
+        return true
+    }
 
     FileOperation grep(Closure closure) {
         if (nodes.isEmpty()) {
             return this
         }
-        Node criteriaParam = buildNodeFrom(closure)
-        NodeList criterionTag = []
-        criterionTag << criteriaParam
-
+        Node criteria =  buildNodeFrom(closure)
         NodeList workingNodes = new NodeList()
-        nodes.each { Node node ->
-            workingNodes.addAll(node.depthFirst())
+        workingNodes.addAll(nodes)
+        nodes.each {Node candidate ->
+            workingNodes.addAll(candidate.depthFirst())
         }
-        criterionTag.each { Node nodeCriteria ->
-            workingNodes = workingNodes.findAll { Node node ->
-                hasSameName(node, nodeCriteria)
-            }
-            if(!nodeCriteria.attributes().isEmpty()) {
-                workingNodes = workingNodes.findAll { Node node ->
-                    hasAttribute(node, nodeCriteria)
-                }
-            }
-            if(nodeCriteria.text() != null) {
-                workingNodes = workingNodes.findAll { Node node ->
-                    node.text() == nodeCriteria.text()
-                }
-            }
+
+        workingNodes = workingNodes.findAll {Node candidate ->
+            grep(criteria, candidate)
         }
-        String leaf = path.last().get()
+
+        // We keep only Parent corresponding to leaf path name
+        String leafPathName = path.last().get()
         LinkedHashSet<Node> results = []
         workingNodes.each {
-            Node result = XMLUtils.findParentByName(it, leaf)
+            Node result = XMLUtils.findParentByName(it, leafPathName)
             if(result) {
                 results << result
             }
