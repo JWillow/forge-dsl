@@ -133,6 +133,15 @@ class XMLOperation implements FileOperation {
         return true
     }
 
+    FileOperation notGrep(Closure closure) {
+        FileOperation operation = grep(closure)
+        def response = this.nodes - operation.nodes
+        XMLOperation xmlOperation = new XMLOperation()
+        xmlOperation.nodes = response
+        xmlOperation.path = path
+        return xmlOperation
+    }
+
     FileOperation grep(Closure closure) {
         if (nodes.isEmpty()) {
             return this
@@ -144,8 +153,10 @@ class XMLOperation implements FileOperation {
             workingNodes.addAll(candidate.depthFirst())
         }
 
-        workingNodes = workingNodes.findAll { Node candidate ->
-            grep(criteria, candidate)
+        workingNodes = workingNodes.findAll { Object candidate ->
+            if (candidate instanceof Node) {
+                grep(criteria, candidate)
+            }
         }
 
         // We keep only Parent corresponding to leaf path name
@@ -164,27 +175,44 @@ class XMLOperation implements FileOperation {
         return xmlOperation
     }
 
-
+    /**
+     * Add or Merge Node
+     * @param closure
+     * @return
+     */
     FileOperation transform(Closure closure) {
         if (nodes.isEmpty()) {
             return this
         }
         Node transformationParamNode = buildNodeFrom(closure)
-        NodeList transformationParamNodes
 
-        if (!hasSameName(transformationParamNode, nodes[0])) {
-            transformationParamNodes = new NodeList()
-            transformationParamNodes << transformationParamNode
-        } else {
-            transformationParamNodes = transformationParamNode.children()
+        NodeList workingNodes = new NodeList(nodes)
+        nodes.each { Node node ->
+            workingNodes.addAll(node.depthFirst().findAll {it instanceof Node})
         }
 
-        nodes.each { Node nodeToTransform ->
-            transformationParamNodes.each { Node transformationNode ->
-                if (!nodeToTransform[transformationNode.name()].isEmpty()) {
-                    nodeToTransform.remove(nodeToTransform[transformationNode.name()][0])
+        workingNodes.each { Node candidate ->
+            if (!hasSameName(candidate, transformationParamNode)) {
+                return
+            }
+            candidate.attributes().putAll(transformationParamNode.attributes())
+            Node clone = transformationParamNode.clone()
+            clone.children().each {
+                if (it instanceof Node) {
+                    NodeList candidateChildNodeToTransform = candidate[it.name()]
+                    if (!candidateChildNodeToTransform.isEmpty()) {
+                        candidateChildNodeToTransform.each { sub ->
+                            if (sub instanceof Node) {
+                                sub.attributes().putAll(it.attributes())
+                                sub.setValue(it.value())
+                            }
+                        }
+                    } else {
+                        candidate.append(it)
+                    }
+                } else {
+                    candidate.setValue(it)
                 }
-                nodeToTransform.append(transformationNode)
             }
         }
         return this

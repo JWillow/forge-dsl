@@ -267,6 +267,41 @@ class XMLOperationSpec extends Specification {
         otherXMLOperation.nodes.size() == 0
     }
 
+    def "notGrep, based on artifactId"() {
+        setup:
+        Node node = buildNode({
+            project {
+                dependencyManagement {
+                    dependencies {
+                        dependency {
+                            artifactId('artifact1')
+                            version('3.0.0')
+                        }
+                        dependency {
+                            artifactId('artifact2')
+                            version('1.0.0')
+                        }
+                        dependency {
+                            artifactId('artifact1NotFound')
+                            version('1.0.0')
+                        }
+                    }
+                }
+            }
+        })
+        XMLOperation xmlOperation = XMLOperation.create(node, "dependencies.dependency")
+
+        when:
+        XMLOperation otherXMLOperation = xmlOperation.notGrep {
+            artifactId('artifact1NotFound')
+        }
+
+        then:
+        otherXMLOperation.size() == 2
+        otherXMLOperation.nodes[0].artifactId.text() == "artifact1"
+        otherXMLOperation.nodes[1].artifactId.text() == "artifact2"
+    }
+
     def "grep, artifactId not found based on multi criteria"() {
         setup:
         Node node = buildNode({
