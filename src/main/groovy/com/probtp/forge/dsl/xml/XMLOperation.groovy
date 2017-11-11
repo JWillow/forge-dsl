@@ -1,6 +1,7 @@
 package com.probtp.forge.dsl.xml
 
 import com.probtp.forge.dsl.FileOperation
+import com.probtp.forge.dsl.FileUtils
 import groovy.text.SimpleTemplateEngine
 import groovy.xml.StreamingMarkupBuilder
 
@@ -35,6 +36,7 @@ class XMLOperation implements FileOperation {
     FileOperation append(File fileName, Map<String, Object> parameters) {
         SimpleTemplateEngine templateEngine = new SimpleTemplateEngine()
         String result = templateEngine.createTemplate(fileName).make(parameters)
+        return append(getExtension(fileName), new ByteArrayInputStream(result.bytes))
         Node nodeToAppend = xmlParser.parseText(result)
         nodes.each { Node node ->
             node.append(nodeToAppend.clone())
@@ -42,23 +44,27 @@ class XMLOperation implements FileOperation {
         return this
     }
 
-    FileOperation append(File file) {
-        switch (getExtension(file)) {
+    FileOperation append(FileUtils.Extension extension, InputStream is) {
+        switch (extension) {
             case XML:
-                Node nodeToAppend = xmlParser.parse(file)
+                Node nodeToAppend = xmlParser.parse(is)
                 nodes.each {
                     Node node ->
                         node.append(nodeToAppend.clone())
                 }
                 break
             case YAML:
-                AppenderUtils.appendFromYAML(file, nodes)
+                AppenderUtils.appendFromYAML(is, nodes)
                 break
             case GROOVY:
-                AppenderUtils.appendFromGroovy(file, nodes)
+                AppenderUtils.appendFromGroovy(is, nodes)
                 break
         }
         return this
+    }
+
+    FileOperation append(File file) {
+        return append(getExtension(file), new FileInputStream(file))
     }
 
     FileOperation append(Closure closure) {

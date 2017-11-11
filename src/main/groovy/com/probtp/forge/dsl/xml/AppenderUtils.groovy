@@ -5,9 +5,9 @@ import org.yaml.snakeyaml.Yaml
 
 class AppenderUtils {
 
-    static appendFromYAML(File file, NodeList nodes) {
+    static appendFromYAML(InputStream is, NodeList nodes) {
         Yaml parser = new Yaml()
-        Node yamlNodeToAppend = ConvertUtil.convert(parser.load(file.text))
+        Node yamlNodeToAppend = ConvertUtil.convert(parser.load(is))
         append(nodes, yamlNodeToAppend)
     }
 
@@ -24,9 +24,9 @@ class AppenderUtils {
             }
         }
     }
-    static appendFromGroovy(File file, NodeList nodes) {
+    static appendFromGroovy(InputStream is, NodeList nodes) {
         XmlParser xmlParser = new XmlParser()
-        Node nodeToAppend = xmlParser.parse(file)
+        Node nodeToAppend = xmlParser.parse(is)
         append(nodes, nodeToAppend)
     }
 }
