@@ -6,6 +6,8 @@ import groovy.transform.ToString
 @ToString(includeNames=true,includeFields=true)
 class Path {
     private List<PathElement> pathElements
+    private boolean optionalModeEnable
+
     private Path() {}
 
     PathElement last() {
@@ -15,17 +17,17 @@ class Path {
         return pathElements[pathElements.size() - 1]
     }
 
-    private NodeList _find(NodeList workingNodes, int pathElementIndex, boolean optionalModeEnable) {
+    private NodeList _find(NodeList workingNodes, int pathElementIndex, boolean optionalModeEnableOnPathElement) {
         PathElement pathElement = pathElements[pathElementIndex]
-        if(!optionalModeEnable) {
-            optionalModeEnable = pathElement.isOptional()
+        if(!optionalModeEnableOnPathElement) {
+            optionalModeEnableOnPathElement = (pathElement.isOptional() || optionalModeEnable)
         }
         NodeList results = new NodeList(workingNodes.findResults{
             NodeList nodes = (NodeList) it[pathElement.get()]
             return !nodes.isEmpty() ? nodes : null
         }).flatten()
         if(results.isEmpty()) {
-            if(optionalModeEnable) {
+            if(optionalModeEnableOnPathElement) {
                 results = new NodeList(workingNodes.collect { it.appendNode(pathElement.get())})
             } else {
                 return new NodeList()
@@ -36,7 +38,7 @@ class Path {
             return results
         }
 
-        return _find(results, ++pathElementIndex, optionalModeEnable)
+        return _find(results, ++pathElementIndex, optionalModeEnableOnPathElement)
     }
 
     NodeList get(Node root) {
@@ -50,7 +52,7 @@ class Path {
         }
 
         if (workingNodes.isEmpty()) {
-            if (pathElements[0].isOptional()) {
+            if (pathElements[0].isOptional() || optionalModeEnable) {
                 workingNodes = new NodeList([root.appendNode(pathElements[0].get())])
             } else {
                 return new NodeList()
@@ -63,7 +65,7 @@ class Path {
         return workingNodes
     }
 
-    static Path create(String path) {
+    static Path create(String path, boolean optionalModeEnable) {
         def pathElements = []
         StringBuffer  word = new StringBuffer()
         boolean quoteEnable = false
@@ -78,6 +80,10 @@ class Path {
             }
         }
         pathElements << PathElement.fromRawPathElement(word.toString())
-        return new Path(pathElements:pathElements)
+        return new Path(pathElements:pathElements, optionalModeEnable: optionalModeEnable)
+    }
+
+    static Path create(String path) {
+        return create(path, false)
     }
 }
