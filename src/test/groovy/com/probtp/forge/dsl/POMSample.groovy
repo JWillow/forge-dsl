@@ -3,11 +3,11 @@ package com.probtp.forge.dsl
 import com.probtp.forge.dsl.xml.XMLOperation
 import spock.lang.Specification
 
-class DSLSpec extends Specification {
+class POMSample extends Specification {
 
     def "Remove the scope only for dependencies with test value"() {
         setup:
-        Project project = new Project(rootDir: new File("."))
+        Repository project = new Repository(rootDir: new File("."))
         XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
         assert xmlOperationDependencyTag.grep{scope("test")}.size() == 7
         assert xmlOperationDependencyTag.grep{scope("compile")}.size() == 1
@@ -18,15 +18,11 @@ class DSLSpec extends Specification {
         then:
         xmlOperationDependencyTag.grep{scope("test")}.size() == 0
         xmlOperationDependencyTag.grep{scope("compile")}.size() == 1
-
-        /*StringWriter stringWriter = new StringWriter()
-        project.fileHandlers[0].saveTo(stringWriter)
-        println stringWriter*/
     }
 
     def "Transform all test scope to compile scope"() {
         setup:
-        Project project = new Project(rootDir: new File("."))
+        Repository project = new Repository(rootDir: new File("."))
         XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
         assert xmlOperationDependencyTag.grep { scope("test") }.size() == 7
         assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
@@ -41,7 +37,7 @@ class DSLSpec extends Specification {
 
     def "Transform all test scope to compile scope, other method"() {
         setup:
-        Project project = new Project(rootDir: new File("."))
+        Repository project = new Repository(rootDir: new File("."))
         XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
         assert xmlOperationDependencyTag.grep { scope("test") }.size() == 7
         assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
@@ -52,5 +48,37 @@ class DSLSpec extends Specification {
         then:
         xmlOperationDependencyTag.grep { scope("test") }.size() == 0
         xmlOperationDependencyTag.grep { scope("compile") }.size() == 8
+    }
+
+    def "Add compile scope to all none scoped dependencies"() {
+        setup:
+        Repository project = new Repository(rootDir: new File("."))
+        XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
+        assert xmlOperationDependencyTag.size() == 10
+        assert xmlOperationDependencyTag.grep { scope("test") }.size() == 7
+        assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
+        assert xmlOperationDependencyTag.notGrep { scope() }.size() == 2
+
+        when:
+        xmlOperationDependencyTag.notGrep { scope() }.append { scope("compile")}
+
+        then:
+        xmlOperationDependencyTag.size() == 10
+        xmlOperationDependencyTag.grep { scope("test") }.size() == 7
+        xmlOperationDependencyTag.grep { scope("compile") }.size() == 3
+        xmlOperationDependencyTag.notGrep { scope() }.size() == 0
+    }
+
+    def "Change version of snakeyaml"() {
+        setup:
+        Repository project = new Repository(rootDir: new File("."))
+
+        when:
+        FileOperation operation = project['pom.xml'].dependency.grep {artifactId("snakeyaml")}.transform{ version("2.0") }
+
+        then:
+        operation.size() == 1
+        operation.nodes[0].artifactId[0].text() == "snakeyaml"
+        operation.nodes[0].version.text() == "2.0"
     }
 }

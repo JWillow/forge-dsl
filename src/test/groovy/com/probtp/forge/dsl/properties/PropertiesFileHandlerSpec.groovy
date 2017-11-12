@@ -37,4 +37,29 @@ class PropertiesFileHandlerSpec extends Specification {
         operation.nodes[0].'@value' == "org.apache.log4j.ConsoleAppender"
         operation.nodes.size() == 1
     }
+
+    def "Append properties file"() {
+        setup:
+        StringWriter writer = new StringWriter()
+        File file = new File("./file.properties")
+        file << "application.db.url=apache.org\n"
+        file << "application.db.password=commanche\n"
+        File fileToAppend = new File("./src/test/resources/properties/file.properties")
+        PropertiesFileHandler handler = PropertiesFileHandler.handle(file)
+
+        when:
+        handler.'&root'.append fileToAppend
+        handler.saveTo(writer)
+
+        then:
+        writer.toString() == "application.db.password=commanche\n" +
+                "application.db.url=apache.org\n" +
+                "log4j.rootLogger=DEBUG, stdout\n" +
+                "log4j.appender.stdout=org.apache.log4j.ConsoleAppender\n" +
+                "log4j.appender.stdout.layout=org.apache.log4j.PatternLayout\n" +
+                "log4j.appender.stdout.layout.ConversionPattern=%d [%-5p] (%F:%M:%L) %m%n\n"
+
+        cleanup:
+        file.deleteOnExit()
+    }
 }

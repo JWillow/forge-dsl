@@ -1,15 +1,15 @@
 package com.probtp.forge.dsl
 
+import com.probtp.forge.dsl.properties.PropertiesFileHandler
+import com.probtp.forge.dsl.utils.FileUtils
 import com.probtp.forge.dsl.yaml.YAMLFileHandler
 
-import static com.probtp.forge.dsl.FileUtils.Extension.*
+import static com.probtp.forge.dsl.utils.FileUtils.Extension.*
 import com.probtp.forge.dsl.xml.XMLFileHandler
 
-class Project {
+class Repository {
 
     File rootDir
-
-    List<FileHandler> fileHandlers = []
 
     FileHandler getAt(String pathExpression) {
         File file = new File(rootDir, pathExpression)
@@ -21,17 +21,14 @@ class Project {
             case YAML:
                 fileHandler = YAMLFileHandler.handle(file)
                 break
+            case PROPERTIES:
+                fileHandler = PropertiesFileHandler.handle(file)
+                break
             default:
-                return null
+                return new DefaultFileHandler(file:file)
 
         }
-        fileHandlers << fileHandler
         return fileHandler
     }
-
-    void save() {
-        fileHandlers.each {it.save()}
-    }
-
 
 }

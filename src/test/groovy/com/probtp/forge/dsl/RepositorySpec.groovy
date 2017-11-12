@@ -2,23 +2,23 @@ package com.probtp.forge.dsl
 
 import spock.lang.Specification
 
-class ProjectSpec extends Specification {
+class RepositorySpec extends Specification {
 
     def "Project xml file handler - simple syntax"() {
         setup:
-        Project project = new Project(rootDir: new File("."))
+        Repository repository = new Repository(rootDir: new File("."))
 
         when:
-        def xmlOperation = project['pom.xml'].name
+        def xmlOperation = repository['pom.xml'].name
         then:
         xmlOperation != null
-        xmlOperation.nodes.size() == 1
+        xmlOperation.size() == 1
         xmlOperation.nodes[0].text() == "forge-dsl"
     }
 
     def "Project xml file handler - complex path syntax"() {
         setup:
-        Project project = new Project(rootDir: new File("."))
+        Repository project = new Repository(rootDir: new File("."))
 
         when:
         def xmlOperation = project['pom.xml']."properties.'project.build.sourceEncoding'"

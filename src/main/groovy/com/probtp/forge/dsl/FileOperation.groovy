@@ -13,4 +13,6 @@ interface FileOperation {
     FileOperation grep(Closure closure)
 
     FileOperation transform(Closure closure)
+
+    int size()
 }

@@ -1,13 +1,18 @@
 package com.probtp.forge.dsl.properties
 
+import com.probtp.forge.dsl.DefaultFileHandler
+import com.probtp.forge.dsl.utils.ConvertUtils
 import com.probtp.forge.dsl.FileHandler
-import com.probtp.forge.dsl.xml.Path
 import com.probtp.forge.dsl.xml.XMLOperation
 
 
-class PropertiesFileHandler implements FileHandler {
+class PropertiesFileHandler extends DefaultFileHandler implements FileHandler {
     private File file
     Node node
+
+    File getFile() {
+        return file
+    }
 
     void save() {
         write(new PrintWriter(file))
@@ -47,23 +52,11 @@ class PropertiesFileHandler implements FileHandler {
         write(writer, value.children(), path)
     }
 
-    static PropertiesFileHandler handle(Properties properties) {
-        PropertiesFileHandler handler = new PropertiesFileHandler()
-        Node root = new Node(null, "&root")
-        properties.each { String key, String value ->
-            NodeList nodes = Path.create(key, true).get(root)
-            nodes.each { Node node ->
-                node.attributes().put("value",value)
-            }
-        }
-        handler.node = root
-        return handler
-    }
-
     static PropertiesFileHandler handle(File file) {
         Properties properties = new Properties()
         properties.load(new FileInputStream(file))
-        PropertiesFileHandler handler = handle(properties)
+        PropertiesFileHandler handler = new PropertiesFileHandler()
+        handler.node = ConvertUtils.convert(properties)
         handler.file = file
         return handler
     }

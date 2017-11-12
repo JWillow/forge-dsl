@@ -1,4 +1,4 @@
-package com.probtp.forge.dsl.xml
+package com.probtp.forge.dsl.xml.utils
 
 import groovy.xml.QName
 

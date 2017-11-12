@@ -1,12 +1,13 @@
 package com.probtp.forge.dsl
 
+import com.probtp.forge.dsl.utils.ConvertUtils
 import spock.lang.Specification
 
 class ConvertUtilSpec extends Specification {
 
     def "simple structure - one root node"() {
         when:
-        Node node = ConvertUtil.convert([test:"value"])
+        Node node = ConvertUtils.convert([test:"value"])
 
         then:
         node != null
@@ -16,7 +17,7 @@ class ConvertUtilSpec extends Specification {
 
     def "Simple structure - two root node"() {
         when:
-        Node node = ConvertUtil.convert([test:"value", otherTest:"otherValue"])
+        Node node = ConvertUtils.convert([test:"value", otherTest:"otherValue"])
 
         then:
         node != null
@@ -29,7 +30,7 @@ class ConvertUtilSpec extends Specification {
 
     def "simple structure with enum - one root node"() {
         when:
-        Node node = ConvertUtil.convert([test:["value1", "value2"]])
+        Node node = ConvertUtils.convert([test:["value1", "value2"]])
 
         then:
         node != null
@@ -40,7 +41,7 @@ class ConvertUtilSpec extends Specification {
 
     def "simple structure with map value - one root node"() {
         when:
-        Node node = ConvertUtil.convert([test:[subtest:["value1", "value2"]]])
+        Node node = ConvertUtils.convert([test:[subtest:["value1", "value2"]]])
 
         then:
         node != null

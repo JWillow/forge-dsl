@@ -1,14 +1,15 @@
 package com.probtp.forge.dsl.xml
 
 import com.probtp.forge.dsl.FileOperation
-import com.probtp.forge.dsl.FileUtils
+import com.probtp.forge.dsl.utils.FileUtils
+import com.probtp.forge.dsl.xml.utils.AppenderUtils
+import com.probtp.forge.dsl.xml.utils.XMLUtils
 import groovy.text.SimpleTemplateEngine
 import groovy.xml.StreamingMarkupBuilder
 
-import static com.probtp.forge.dsl.FileUtils.Extension.XML
-import static com.probtp.forge.dsl.FileUtils.Extension.*
-import static com.probtp.forge.dsl.FileUtils.getExtension
-import static com.probtp.forge.dsl.xml.XMLUtils.*
+import static com.probtp.forge.dsl.utils.FileUtils.Extension.*
+import static com.probtp.forge.dsl.utils.FileUtils.getExtension
+import static com.probtp.forge.dsl.xml.utils.XMLUtils.*
 
 class XMLOperation implements FileOperation {
 
@@ -33,24 +34,18 @@ class XMLOperation implements FileOperation {
         return xmlParser.parseText(streamingMarkupBuilder.bind(closure).toString())
     }
 
-    FileOperation append(File fileName, Map<String, Object> parameters) {
+    FileOperation append(File file, Map<String, Object> parameters) {
         SimpleTemplateEngine templateEngine = new SimpleTemplateEngine()
-        String result = templateEngine.createTemplate(fileName).make(parameters)
-        return append(getExtension(fileName), new ByteArrayInputStream(result.bytes))
-        Node nodeToAppend = xmlParser.parseText(result)
-        nodes.each { Node node ->
-            node.append(nodeToAppend.clone())
-        }
-        return this
+        String result = templateEngine.createTemplate(file).make(parameters)
+        return append(getExtension(file), new ByteArrayInputStream(result.bytes))
     }
 
     FileOperation append(FileUtils.Extension extension, InputStream is) {
         switch (extension) {
             case XML:
                 Node nodeToAppend = xmlParser.parse(is)
-                nodes.each {
-                    Node node ->
-                        node.append(nodeToAppend.clone())
+                nodes.each {Node node ->
+                        node.append((Node) nodeToAppend.clone())
                 }
                 break
             case YAML:
@@ -58,6 +53,9 @@ class XMLOperation implements FileOperation {
                 break
             case GROOVY:
                 AppenderUtils.appendFromGroovy(is, nodes)
+                break
+            case PROPERTIES:
+                AppenderUtils.appendFromProperties(is, nodes)
                 break
         }
         return this
@@ -86,6 +84,11 @@ class XMLOperation implements FileOperation {
         return this
     }
 
+    /**
+     * Use to produce a new instance of XMLOperation with a Path create from property value
+     * @param property
+     * @return new instance of XMLOperation
+     */
     Object propertyMissing(String property) {
         // Property : translate to path
         Path path = Path.create(property)
@@ -105,7 +108,7 @@ class XMLOperation implements FileOperation {
         }.size() == nodeCriteria.attributes().size()
     }
 
-    boolean grep(Node criteria, Node candidate) {
+    static boolean grep(Node criteria, Node candidate) {
         if (!hasSameName(candidate, criteria)) {
             return false
         }
@@ -133,6 +136,11 @@ class XMLOperation implements FileOperation {
         return true
     }
 
+    /**
+     * Search that doen't match the closure expression
+     * @param closure - Node groovy structure as criteria
+     * @return new instance of FileOperation with the subset of matching result
+     */
     FileOperation notGrep(Closure closure) {
         FileOperation operation = grep(closure)
         def response = this.nodes - operation.nodes
@@ -142,6 +150,11 @@ class XMLOperation implements FileOperation {
         return xmlOperation
     }
 
+    /**
+     * Search to grep by using closure as criteria
+     * @param closure - Node groovy structure to gre
+     * @return new instance of FileOperation with the subset of matching result
+     */
     FileOperation grep(Closure closure) {
         if (nodes.isEmpty()) {
             return this

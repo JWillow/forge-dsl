@@ -1,22 +1,27 @@
 package com.probtp.forge.dsl.yaml
 
-import com.probtp.forge.dsl.ConvertUtil
+import com.probtp.forge.dsl.utils.ConvertUtils
 import com.probtp.forge.dsl.FileHandler
 import com.probtp.forge.dsl.xml.XMLOperation
+import org.xml.sax.helpers.DefaultHandler
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 
-class YAMLFileHandler implements FileHandler{
+class YAMLFileHandler extends DefaultHandler implements FileHandler{
 
     private File file
     Node node
+
+    File getFile() {
+        return file
+    }
 
     void saveTo(Writer writer) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
         options.setPrettyFlow(true)
         Yaml parser = new Yaml(options)
-        parser.dump(ConvertUtil.convertFromNode(node), writer)
+        parser.dump(ConvertUtils.convertFromNode(node), writer)
     }
 
     void save() {
@@ -31,7 +36,7 @@ class YAMLFileHandler implements FileHandler{
     static YAMLFileHandler handle(String strYAML) {
         YAMLFileHandler handler = new YAMLFileHandler()
         Yaml parser = new Yaml()
-        handler.node = ConvertUtil.convert(parser.load(strYAML))
+        handler.node = ConvertUtils.convert(parser.load(strYAML))
         return handler
     }
 

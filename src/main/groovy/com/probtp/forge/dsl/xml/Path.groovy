@@ -1,6 +1,6 @@
 package com.probtp.forge.dsl.xml
 
-import static com.probtp.forge.dsl.xml.XMLUtils.hasSameName
+import static com.probtp.forge.dsl.xml.utils.XMLUtils.hasSameName
 import groovy.transform.ToString
 
 @ToString(includeNames=true,includeFields=true)

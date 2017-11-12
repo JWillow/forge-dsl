@@ -1,6 +1,8 @@
-package com.probtp.forge.dsl
+package com.probtp.forge.dsl.utils
 
-class ConvertUtil {
+import com.probtp.forge.dsl.xml.Path
+
+class ConvertUtils {
 
     static void _convert(Node root, Map<String, Object> structure) {
         structure.each { key, value ->
@@ -87,5 +89,17 @@ class ConvertUtil {
             _convertFromNode(node, maps)
         }
         return maps
+    }
+
+
+    static Node convert(Properties properties) {
+        Node root = new Node(null, "&root")
+        properties.each { String key, String value ->
+            NodeList nodes = Path.create(key, true).get(root)
+            nodes.each { Node node ->
+                node.attributes().put("value",value)
+            }
+        }
+        return root
     }
 }

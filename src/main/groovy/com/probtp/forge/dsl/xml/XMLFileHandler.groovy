@@ -1,8 +1,10 @@
 package com.probtp.forge.dsl.xml
 
+import com.probtp.forge.dsl.DefaultFileHandler
 import com.probtp.forge.dsl.FileHandler
 
-class XMLFileHandler implements FileHandler {
+
+class XMLFileHandler extends DefaultFileHandler implements FileHandler {
 
     private Node node
     private File file
@@ -19,6 +21,10 @@ class XMLFileHandler implements FileHandler {
             quote = "'" // Use single quote for attributes
         }
         nodePrinter.print(node)
+    }
+
+    File getFile() {
+        return file
     }
 
     void save() {

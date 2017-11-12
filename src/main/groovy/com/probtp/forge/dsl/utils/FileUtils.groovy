@@ -1,4 +1,4 @@
-package com.probtp.forge.dsl
+package com.probtp.forge.dsl.utils
 
 
 class FileUtils {
@@ -25,5 +25,4 @@ class FileUtils {
                 return Extension.UNKNOWN
         }
     }
-
 }
