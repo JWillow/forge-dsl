@@ -68,7 +68,7 @@ class XMLOperation implements FileOperation {
     FileOperation append(Closure closure) {
         Node nodeToAppend = buildNodeFrom(closure)
         nodes.each { Node node ->
-            node.append(nodeToAppend)
+            node.append((Node) nodeToAppend.clone())
         }
         return this
     }
@@ -221,7 +221,7 @@ class XMLOperation implements FileOperation {
                             }
                         }
                     } else {
-                        candidate.append(it)
+                        candidate.append((Node)it.clone())
                     }
                 } else {
                     candidate.setValue(it)

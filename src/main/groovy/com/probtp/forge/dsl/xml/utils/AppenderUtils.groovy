@@ -31,11 +31,11 @@ class AppenderUtils {
         nodes.each { Node node ->
             if (ignoreRoot) {
                 // We must ignore the root node of YAML/Properties because it is artificial
-                nodeToAppend.children().each { yamlChildNodeToAppend ->
-                    node.append(yamlChildNodeToAppend.clone())
+                nodeToAppend.children().each { child ->
+                    node.append((Node) child.clone())
                 }
             } else {
-                node.append(nodeToAppend.clone())
+                node.append((Node) nodeToAppend.clone())
             }
         }
     }

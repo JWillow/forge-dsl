@@ -9,15 +9,15 @@ class POMSample extends Specification {
         setup:
         Repository project = new Repository(rootDir: new File("."))
         XMLOperation xmlOperationDependencyTag = project['pom.xml'].dependency
-        assert xmlOperationDependencyTag.grep{scope("test")}.size() == 7
-        assert xmlOperationDependencyTag.grep{scope("compile")}.size() == 1
+        assert xmlOperationDependencyTag.grep { scope("test") }.size() == 7
+        assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
 
         when:
-        xmlOperationDependencyTag.grep{scope("test")}.scope.removeAll()
+        xmlOperationDependencyTag.grep { scope("test") }.scope.removeAll()
 
         then:
-        xmlOperationDependencyTag.grep{scope("test")}.size() == 0
-        xmlOperationDependencyTag.grep{scope("compile")}.size() == 1
+        xmlOperationDependencyTag.grep { scope("test") }.size() == 0
+        xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
     }
 
     def "Transform all test scope to compile scope"() {
@@ -28,7 +28,7 @@ class POMSample extends Specification {
         assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
 
         when:
-        xmlOperationDependencyTag.grep { scope("test") }.scope.transform { scope('compile')}
+        xmlOperationDependencyTag.grep { scope("test") }.scope.transform { scope('compile') }
 
         then:
         xmlOperationDependencyTag.grep { scope("test") }.size() == 0
@@ -43,7 +43,7 @@ class POMSample extends Specification {
         assert xmlOperationDependencyTag.grep { scope("compile") }.size() == 1
 
         when:
-        xmlOperationDependencyTag.grep { scope("test") }.transform { scope('compile')}
+        xmlOperationDependencyTag.grep { scope("test") }.transform { scope('compile') }
 
         then:
         xmlOperationDependencyTag.grep { scope("test") }.size() == 0
@@ -60,7 +60,7 @@ class POMSample extends Specification {
         assert xmlOperationDependencyTag.notGrep { scope() }.size() == 2
 
         when:
-        xmlOperationDependencyTag.notGrep { scope() }.append { scope("compile")}
+        xmlOperationDependencyTag.notGrep { scope() }.append { scope("compile") }
 
         then:
         xmlOperationDependencyTag.size() == 10
@@ -74,7 +74,9 @@ class POMSample extends Specification {
         Repository project = new Repository(rootDir: new File("."))
 
         when:
-        FileOperation operation = project['pom.xml'].dependency.grep {artifactId("snakeyaml")}.transform{ version("2.0") }
+        FileOperation operation = project['pom.xml'].dependency.grep { artifactId("snakeyaml") }.transform {
+            version("2.0")
+        }
 
         then:
         operation.size() == 1
